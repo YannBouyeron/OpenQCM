@@ -1,14 +1,11 @@
 from bottle import *
 from qcm import *
-import time
-import os
-import pandas as pd
-import qrcode
-from qrcode.image.svg import SvgImage
-from io import BytesIO
-import zipfile
-import glob
-from io import StringIO
+
+
+ipfs = ipfshttpclient.connect(
+    '/dns/ipfs.infura.io/tcp/5001/https',
+    chunk_size=20000000,
+     session=True)
 
 realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
 
@@ -26,10 +23,14 @@ def index(exe=""):
     exemple = exe
 
     txt = """
-		<form method="post" action="/upload" accept-charset="ISO-8859-1">
+		<form method="post" action="/traitementtxt" accept-charset="ISO-8859-1">
 		<p><label for="txt"></label><br/>
 		<textarea name="txt" id="txt" rows="30" cols="150" wrap="virtual" style="overflow:scroll;">{0}</textarea>
-		</p><input type="submit" value="Envoyer"/></form>""".format(exemple)
+		</p>
+             <input type="submit" name="creat" value="DS"/>
+		<input type="submit" name="html" value="html"/>
+		<input type="submit" name="pdf" value="pdf"/>
+                </form>""".format(exemple)
 
     ld = """
         <form action="/traitementExemple" method="post" accept-charset="ISO-8859-1">
@@ -120,82 +121,60 @@ def postqcm():
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': x})
 
 
+@route("/traitementtxt", method="POST")
+def traittxt():
+    
+    txt = request.forms.get("txt")  # str chargée depuis formulaire textarea
+
+
+    if request.POST.creat:
+
+        html = qcm2sqlGetHTML(txt)
+
+        print(html)
+
+        return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
+
+
+    elif request.POST.html:
+
+        txt = request.forms.get("txt")
+
+        html = mdht(txt)
+
+        h = ipfs.add_str(html)
+
+        url = "https://ipfs.io/ipfs/{0}".format(h)
+
+        response.status = 303
+        response.set_header('Location', url)
+
+
+    elif request.POST.pdf:
+
+        pass
+
+
+
 @route('/upload', method='POST')
 def do_upload():
 
-    upload = request.files.get('upload')  # fichier chargé depuis local
 
-    txt = request.forms.get("txt")  # str chargée depuis formulaire
+    upload = request.files.get('upload')  # fichier chargé depuis local
 
     path = secrets.token_urlsafe(16)
 
-    if upload is not None:
+    name, ext = os.path.splitext(upload.filename)
 
-        name, ext = os.path.splitext(upload.filename)
+    if ext != '.txt':
 
-        if ext != '.txt' or ext != '.md':
+        return 'File extension not allowed.'
 
-            return 'File extension not allowed.'
+    upload.save(path)
 
-        upload.save(path)
-
-    elif txt is not None:
-
-        path = txt
-
-    x = qcm2sql(path)
-
-    id = x[0]
-
-    start = formaTime(x[1][0])
-
-    end = formaTime(x[1][1])
-
-    password = x[2]
-
-    if upload is not None:
-
-        os.remove(path)
-
-    # creat qrcode eleve
-
-    linkeleve = "http://192.168.43.206:27200/getqcm/{0}".format(id)
-
-    streameleve = BytesIO()
-    imgeleve = qrcode.make(linkeleve, image_factory=SvgImage)
-    imgeleve.save(streameleve)
-
-    linkeleve = streameleve.getvalue().decode()
-
-    # creat qrcode prof
-
-    linkprof = "http://192.168.43.206:27200/prof/{0}/{1}".format(
-        id, password)
-
-    streamprof = BytesIO()
-    imgprof = qrcode.make(linkprof, image_factory=SvgImage)
-    imgprof.save(streamprof)
-
-    linkprof = streamprof.getvalue().decode()
-
-    html = """<h1 align=center>OpenQCM</h1></br>{4}</br>
-        <h3 align=center>Votre QCM référence: {0} a bien été enregistré.</h3>
-        <h4 align=center>Ce QCM est actif du {1} au {2}</h4>
-
-        <h4 align=center>Communiquez ce lien à vos élèves:</h4>
-        <p align=center><a
-href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm/{0}</a></p>
-        <div align=center>{6}</div>
-        </br></br>
-        <h2 align=center>Votre code secret est: <em>{3}</em></h2>
-        <h4 align=center>Conservez ce code. Il vous sera indispensable pour obtenir les résultats de vos élèves.</h4>
-
-        <h3 align=center>Votre interface professeur est disponible à l’adresse suivante:</h3>
-
-        <p align=center><a href="http://192.168.43.206:27200/prof/{0}/{3}">http://192.168.43.206:27200/prof/{0}/{3}</a></p>
-        <div align=center>{5}</div>""".format(id, start, end, password,
-                                              realTime, linkprof, linkeleve)
-
+    html = qcm2sqlGetHTML(path)
+    
+       
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
 
 
@@ -492,4 +471,4 @@ def resultatprof(id, secret):
 
 
 run(host='0.0.0.0', port=27200, reload=True, debug=True)
-#application = default_app()
+# application = default_app()

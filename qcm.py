@@ -2,8 +2,19 @@ import numpy as np
 import secrets
 import json
 import os
+import time
+
+import pandas as pd
+import qrcode
+from qrcode.image.svg import SvgImage
+from io import BytesIO
+import zipfile
+import glob
+from md2html2pdf import *
+import ipfshttpclient
 
 from sqlite3 import *
+
 
 conn = connect("data.txt")
 
@@ -16,6 +27,13 @@ cur.execute(
 cur.execute(
     "CREATE TABLE IF NOT EXISTS reponses (id INTEGER, html TEXT, count FLOAT, name TEXT, secret TEXT, timestamp FLOAT)"
 )
+
+
+realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
+
+
+
+
 
 
 def txt2list(qcm):
@@ -274,6 +292,64 @@ def getTotal(k):
         s = sum(total)
 
     return s
+
+
+def qcm2sqlGetHTML(path):
+
+    x = qcm2sql(path)
+
+    id = x[0]
+
+    start = formaTime(x[1][0])
+
+    end = formaTime(x[1][1])
+
+    password = x[2]
+
+    if os.path.isfile(path):
+
+        os.remove(path)
+
+    # creat qrcode eleve
+
+    linkeleve = "http://192.168.43.206:27200/getqcm/{0}".format(id)
+
+    streameleve = BytesIO()
+    imgeleve = qrcode.make(linkeleve, image_factory=SvgImage)
+    imgeleve.save(streameleve)
+
+    linkeleve = streameleve.getvalue().decode()
+
+    # creat qrcode prof
+
+    linkprof = "http://192.168.43.206:27200/prof/{0}/{1}".format(
+        id, password)
+
+    streamprof = BytesIO()
+    imgprof = qrcode.make(linkprof, image_factory=SvgImage)
+    imgprof.save(streamprof)
+
+    linkprof = streamprof.getvalue().decode()
+
+    html = """<h1 align=center>OpenQCM</h1></br>{4}</br>
+        <h3 align=center>Votre QCM référence: {0} a bien été enregistré.</h3>
+        <h4 align=center>Ce QCM est actif du {1} au {2}</h4>
+
+        <h4 align=center>Communiquez ce lien à vos élèves:</h4>
+        <p align=center><a
+href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm/{0}</a></p>
+        <div align=center>{6}</div>
+        </br></br>
+        <h2 align=center>Votre code secret est: <em>{3}</em></h2>
+        <h4 align=center>Conservez ce code. Il vous sera indispensable pour obtenir les résultats de vos élèves.</h4>
+
+        <h3 align=center>Votre interface professeur est disponible à l’adresse suivante:</h3>
+
+        <p align=center><a href="http://192.168.43.206:27200/prof/{0}/{3}">http://192.168.43.206:27200/prof/{0}/{3}</a></p>
+        <div align=center>{5}</div>""".format(id, start, end, password,
+                                              realTime, linkprof, linkeleve)
+
+    return html
 
 
 def qcm2sql(qcmPath):
