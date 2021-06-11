@@ -9,6 +9,21 @@ ipfs = ipfshttpclient.connect(
 
 realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
 
+pdfcss = """
+h1, h2, h3, h4, h5, h6 { font-family: "Times"; font-weight: normal; margin-top: 32px; margin-bottom: 12px; color: #3c3b36; padding-bottom: 4px; } h1 { font-size: 1.6em; text-transform: uppercase; font-weight: bold; text-align: center; } h2 { font-size: 1.4em; text-decoration: underline; font-weight: bold; } h3 { font-size: 1.2em; text-decoration: underline; font-weight: bold; } h4, h5, h6 { font-size: 1em; font-weight: bold; } p { margin-bottom: 12px; } p:last-child { margin-bottom: 0; } ol { list-style: outside decimal; } ul { list-style: outside disc; } li > p { margin-bottom: 12px; } li > ol, li > ul { margin-top: 12px !important; padding-left: 12px; } ol:last-child, ul:last-child { margin-bottom: 12px; } 
+
+pre { white-space: pre-wrap; margin-bottom: 24px; overflow: hidden; padding: 8px; border-radius: 0px; background-color: #ececec; border-color: #d9d9d9;} 
+
+code { font-family: "Arial", monospace; font-size: 1em; white-space: nowrap; padding: 1px; border-radius: 0px; background-color: #ececec; color: #3c3b36; } 
+
+pre code { font-size: 10px; white-space: pre-wrap; } 
+
+blockquote { border-left: 5px solid grey; font-size: 90%; margin-left: 0; margin-right: auto; width: 98%; padding: 0px 2px 2px 6px; background-color: #ececec; font-family: Times; } 
+
+.theme-dark blockquote { border-color: #4d371a; } table {width:100%; border:1px solid black; border-collapse:collapse;} td , th {border:1px solid black; border-collapse:collapse; padding-top:5px; padding-bottom:5px; width:auto;} img { border: none; display: block; margin: 0 auto; } hr { border: 0; height: 1px; background-color: #ddd; } .footnote { font-size: 0.8em; vertical-align: super; } .footnotes ol { font-weight: bold; } .footnotes ol li p { font-weight: normal; }
+        """
+        
+
 
 @route('/static/<filepath:path>')
 def send_static(filepath):
@@ -138,7 +153,7 @@ def traittxt():
 
         txt = txt.replace("\x92", "'")
 
-        html = mdhtml(txt)
+        html = mdhtml(txt, style=pdfcss + "body {width:100%; padding-left:4px; padding-right:4px;} html {width:100%;}")
 
         h = ipfs.add_str(html)
 
@@ -154,9 +169,10 @@ def traittxt():
 
         txt = txt.replace("\x92", "'")
         
-        html = mdhtml(txt)
-        
-        htmlpdf(html, path)
+        html = mdhtml(txt, style=pdfcss)
+
+
+        htmlpdf(html, path, css=pdfcss)
 
         h = ipfs.add(path)
         h = h['Hash']
