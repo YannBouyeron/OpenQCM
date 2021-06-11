@@ -5,24 +5,23 @@ from qcm import *
 ipfs = ipfshttpclient.connect(
     '/dns/ipfs.infura.io/tcp/5001/https',
     chunk_size=20000000,
-     session=True)
+    session=True)
 
 realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
 
 pdfcss = """
-h1, h2, h3, h4, h5, h6 { font-family: "Times"; font-weight: normal; margin-top: 32px; margin-bottom: 12px; color: #3c3b36; padding-bottom: 4px; } h1 { font-size: 1.6em; text-transform: uppercase; font-weight: bold; text-align: center; } h2 { font-size: 1.4em; text-decoration: underline; font-weight: bold; } h3 { font-size: 1.2em; text-decoration: underline; font-weight: bold; } h4, h5, h6 { font-size: 1em; font-weight: bold; } p { margin-bottom: 12px; } p:last-child { margin-bottom: 0; } ol { list-style: outside decimal; } ul { list-style: outside disc; } li > p { margin-bottom: 12px; } li > ol, li > ul { margin-top: 12px !important; padding-left: 12px; } ol:last-child, ul:last-child { margin-bottom: 12px; } 
+h1, h2, h3, h4, h5, h6 { font-family: "Times"; font-weight: normal; margin-top: 32px; margin-bottom: 12px; color: #3c3b36; padding-bottom: 4px; } h1 { font-size: 1.6em; text-transform: uppercase; font-weight: bold; text-align: center; } h2 { font-size: 1.4em; text-decoration: underline; font-weight: bold; } h3 { font-size: 1.2em; text-decoration: underline; font-weight: bold; } h4, h5, h6 { font-size: 1em; font-weight: bold; } p { margin-bottom: 12px; } p:last-child { margin-bottom: 0; } ol { list-style: outside decimal; } ul { list-style: outside disc; } li > p { margin-bottom: 12px; } li > ol, li > ul { margin-top: 12px !important; padding-left: 12px; } ol:last-child, ul:last-child { margin-bottom: 12px; }
 
-pre { white-space: pre-wrap; margin-bottom: 24px; overflow: hidden; padding: 8px; border-radius: 0px; background-color: #ececec; border-color: #d9d9d9;} 
+pre { white-space: pre-wrap; margin-bottom: 24px; overflow: hidden; padding: 8px; border-radius: 0px; background-color: #ececec; border-color: #d9d9d9;}
 
-code { font-family: "Arial", monospace; font-size: 1em; white-space: nowrap; padding: 1px; border-radius: 0px; background-color: #ececec; color: #3c3b36; } 
+code { font-family: "Arial", monospace; font-size: 1em; white-space: nowrap; padding: 1px; border-radius: 0px; background-color: #ececec; color: #3c3b36; }
 
-pre code { font-size: 10px; white-space: pre-wrap; } 
+pre code { font-size: 10px; white-space: pre-wrap; }
 
-blockquote { border-left: 5px solid grey; font-size: 90%; margin-left: 0; margin-right: auto; width: 98%; padding: 0px 2px 2px 6px; background-color: #ececec; font-family: Times; } 
+blockquote { border-left: 5px solid grey; font-size: 90%; margin-left: 0; margin-right: auto; width: 98%; padding: 0px 2px 2px 6px; background-color: #ececec; font-family: Times; }
 
 .theme-dark blockquote { border-color: #4d371a; } table {width:100%; border:1px solid black; border-collapse:collapse;} td , th {border:1px solid black; border-collapse:collapse; padding-top:5px; padding-bottom:5px; width:auto;} img { border: none; display: block; margin: 0 auto; } hr { border: 0; height: 1px; background-color: #ddd; } .footnote { font-size: 0.8em; vertical-align: super; } .footnotes ol { font-weight: bold; } .footnotes ol li p { font-weight: normal; }
         """
-        
 
 
 @route('/static/<filepath:path>')
@@ -138,9 +137,8 @@ def postqcm():
 
 @route("/traitementtxt", method="POST")
 def traittxt():
-    
-    txt = request.forms.get("txt")  # str chargée depuis formulaire textarea
 
+    txt = request.forms.get("txt")  # str chargée depuis formulaire textarea
 
     if request.POST.creat:
 
@@ -148,12 +146,14 @@ def traittxt():
 
         return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
 
-
     elif request.POST.html:
 
         txt = txt.replace("\x92", "'")
 
-        html = mdhtml(txt, style=pdfcss + "body {width:100%; padding-left:4px; padding-right:4px;} html {width:100%;}")
+        html = mdhtml(
+            txt,
+            style=pdfcss +
+            "body {width:100%; padding-left:4px; padding-right:4px;} html {width:100%;}")
 
         h = ipfs.add_str(html)
 
@@ -162,15 +162,13 @@ def traittxt():
         response.status = 303
         response.set_header('Location', url)
 
-
     elif request.POST.pdf:
 
         path = secrets.token_urlsafe(16)
 
         txt = txt.replace("\x92", "'")
-        
-        html = mdhtml(txt, style=pdfcss)
 
+        html = mdhtml(txt, style=pdfcss)
 
         htmlpdf(html, path, css=pdfcss)
 
@@ -185,11 +183,8 @@ def traittxt():
         response.set_header('Location', url)
 
 
-
-
 @route('/upload', method='POST')
 def do_upload():
-
 
     upload = request.files.get('upload')  # fichier chargé depuis local
 
@@ -204,8 +199,7 @@ def do_upload():
     upload.save(path)
 
     html = qcm2sqlGetHTML(path)
-    
-       
+
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
 
 
@@ -237,38 +231,30 @@ def sendresponse():
 
     html = ""
 
+    # si question ouverte
+
+    for i in qcm:
+
+        if len(i) == 2:
+
+            repouverte = request.forms.get(i[0])
+
+            html += "<p><strong>{0}</strong></p></br><p>{1}</p></br>".format(
+                i[0], repouverte)
+
+    # si QCM ou alors VF
+
     if isTrueQCM(qcm):
 
         count = 0
 
         for i in qcm:
 
-            r = request.forms.get(i[0])
+            if len(i) > 2:  # si ce n’est pas une question ouverte
 
-            html += "<p><strong>{0}</strong></p></br>".format(i[0])
+                r = request.forms.get(i[0])
 
-            r = "-" + r
-
-            for j in i[1:]:
-
-                if r == j[0]:
-
-                    html += j[0] + "    <strong>" + \
-                        str(j[1]) + "</strong></br></br>"
-
-                    count += float(j[1])
-
-    else:
-
-        count = 0
-
-        for i in qcm:
-
-            w = request.forms.getall(i[0])
-
-            html += "<p><strong>{0}</strong></p></br>".format(i[0])
-
-            for r in w:
+                html += "<p><strong>{0}</strong></p></br>".format(i[0])
 
                 r = "-" + r
 
@@ -278,13 +264,38 @@ def sendresponse():
 
                         html += j[0] + "    <strong>" + \
                             str(j[1]) + "</strong></br></br>"
-                        
+
                         count += float(j[1])
 
-        if count < 0: # les points négatifs ne s’accumulent pas entre les différentes questions
+    else:
+
+        count = 0
+
+        for i in qcm:
+
+            if len(i) > 2:  # si ce n’est pas une question ouverte
+
+                w = request.forms.getall(i[0])
+
+                html += "<p><strong>{0}</strong></p></br>".format(i[0])
+
+                for r in w:
+
+                    r = "-" + r
+
+                    for j in i[1:]:
+
+                        if r == j[0]:
+
+                            html += j[0] + "    <strong>" + \
+                                str(j[1]) + "</strong></br></br>"
+
+                            count += float(j[1])
+
+        if count < 0:  # les points négatifs ne s’accumulent pas entre les différentes questions
 
             count = 0
-       
+
     rep = response2sql(id, html, count, name, t)
 
     password = rep[4]

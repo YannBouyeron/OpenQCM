@@ -94,6 +94,20 @@ def txt2list(qcm):
 
                     break
 
+        elif j[0] == "#":
+
+            z = y[i]
+
+            nline = z.count("#")
+
+            z = z.replace("#", "")
+
+            z = z.replace(",", ".")
+
+            n = float(z)
+
+            y[i] =  (str(nline), n)              
+
     # formatage lien
 
     for i, j in enumerate(y):
@@ -125,6 +139,8 @@ def txt2list(qcm):
                     break
 
     # decoupage questions
+
+    print(y)
 
     ind = []
 
@@ -442,19 +458,26 @@ def creatForm(id):
 
         d += "<p width=100%><strong>{0}</strong></p></br>".format(label)
 
-        for j in i[1:]:
+        if len(i) == 2: # c’est alors une question ouverte
 
-            if isTrueQCM(qcm):
+                d += """<textarea name="{0}" id="{0}" rows="{1}" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>""".format(label, int(i[1][0])) 
 
-                d += """<input type="radio" name="{0}" value="{1}" required/>{1}</br>""".format(
-                    label, j[0][1:])
 
-            else:
+        elif len(i) > 2:
 
-                d += """<input type="checkbox" name="{0}" value="{1}"/>{1}</br>""".format(
-                    label, j[0][1:])
+            for j in i[1:]:
 
-            # attention tu as retiré le "-" il faudra y penser lors des compara
+                if isTrueQCM(qcm):
+
+                    d += """<input type="radio" name="{0}" value="{1}" required/>{1}</br>""".format(
+                        label, j[0][1:])
+
+                else:
+
+                    d += """<input type="checkbox" name="{0}" value="{1}"/>{1}</br>""".format(
+                        label, j[0][1:])
+
+                # attention tu as retiré le "-" il faudra y penser lors des compara
 
         d += "</br>"
 
