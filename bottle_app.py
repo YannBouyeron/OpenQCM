@@ -50,7 +50,7 @@ def index(exe=""):
 	<p align=center><input type="submit" value="Charger" /></p></form>"""
 
     ipfs = """
-        <object data="http://ipfs.io/ipfs/QmZFJkMEEE9HNUrUYLLJVaw6mWoYYwdoDtXhXmWV2AeNiX" type="text/html" width=100% height=800/>"""
+        <object data="http://ipfs.io/ipfs/QmR3KCUgRJpMpsp7ckbi3ASJWNU8Lk13qEWTZBwiMYiz1R" type="text/html" width=300 height=400/>"""
 
     ht = """<h1 align=center>OpenQCM</h1>{0}</br><div align=center>{1}</div><div align=center>{2}</div><div align=center>{3}</div><div align=center>{4}</div>""".format(
         realTime,
@@ -131,16 +131,14 @@ def traittxt():
 
         html = qcm2sqlGetHTML(txt)
 
-        print(html)
-
         return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
 
 
     elif request.POST.html:
 
-        txt = request.forms.get("txt")
+        txt = txt.replace("\x92", "'")
 
-        html = mdht(txt)
+        html = mdhtml(txt)
 
         h = ipfs.add_str(html)
 
@@ -152,7 +150,24 @@ def traittxt():
 
     elif request.POST.pdf:
 
-        pass
+        path = secrets.token_urlsafe(16)
+
+        txt = txt.replace("\x92", "'")
+        
+        html = mdhtml(txt)
+        
+        htmlpdf(html, path)
+
+        h = ipfs.add(path)
+        h = h['Hash']
+
+        os.remove(path)
+
+        url = "https://ipfs.io/ipfs/{0}".format(h)
+
+        response.status = 303
+        response.set_header('Location', url)
+
 
 
 
@@ -235,7 +250,7 @@ def sendresponse():
 
             w = request.forms.getall(i[0])
 
-            html += "<p>{0}</p></br>".format(i[0])
+            html += "<p><strong>{0}</strong></p></br>".format(i[0])
 
             for r in w:
 
@@ -274,7 +289,7 @@ def sendresponse():
             <h3 align=center>
             <a href='http://192.168.43.206:27200/eleve/{0}'>
             http://192.168.43.206:27200/eleve/{0}</a></h3>
-            <div align=center>{3}</div>
+            <div align=center><{3}</div>
             """.format(password, formaTime(end), realTime, linkeleve)
     })
 
