@@ -278,9 +278,13 @@ def sendresponse():
 
                         html += j[0] + "    <strong>" + \
                             str(j[1]) + "</strong></br></br>"
-
+                        
                         count += float(j[1])
 
+        if count < 0: # les points négatifs ne s’accumulent pas entre les différentes questions
+
+            count = 0
+       
     rep = response2sql(id, html, count, name, t)
 
     password = rep[4]
@@ -305,7 +309,7 @@ def sendresponse():
             <h3 align=center>
             <a href='http://192.168.43.206:27200/eleve/{0}'>
             http://192.168.43.206:27200/eleve/{0}</a></h3>
-            <div align=center><{3}</div>
+            <div align=center>{3}</div>
             """.format(password, formaTime(end), realTime, linkeleve)
     })
 

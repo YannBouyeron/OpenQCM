@@ -79,9 +79,20 @@ def txt2list(qcm):
 
         if j[0] == "-":
 
+            notes = [-0.5, -1.5, 1.5, 0.5, -1, -2, 1, 2, 0]
+
             z = y[i]
 
-            y[i] = (z[:len(z) - 2], float(z[len(z) - 2:]))
+            for n in notes:
+
+                nn = str(n)
+                nn = nn.replace(".", ",")
+
+                if z[len(j) - len(nn):] == nn:
+
+                    y[i] = (z[:len(z) - len(nn)], n)
+
+                    break
 
     # formatage lien
 
