@@ -25,19 +25,19 @@ cur.execute(
 )
 
 cur.execute(
-    "CREATE TABLE IF NOT EXISTS reponses (id INTEGER, html TEXT, count FLOAT, name TEXT, secret TEXT, timestamp FLOAT)"
+    "CREATE TABLE IF NOT EXISTS rep (id INTEGER, reponses TEXT, name TEXT, secret TEXT, timestamp FLOAT)"
 )
+
+cur.execute(
+    "CREATE TABLE IF NOT EXISTS cor (id INTEGER, corrections TEXT, name TEXT)"
+)
+
 
 
 realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
 
 
-
-
-
-
 def txt2list(qcm):
-
     """
     input: str ou paht du qcm
 
@@ -46,7 +46,6 @@ def txt2list(qcm):
         les questions ouvertes sont au format ["q", (str nombre ligne du form, int point]
         les qcm sont au format ["q", ("-p", int point), (), (), ()]
     """
-
 
     if os.path.isfile(qcm):  # si upload depuis local
 
@@ -83,11 +82,12 @@ def txt2list(qcm):
 
         y[i] = j.strip()
 
-    # restucture liste et formatage lien et reconnaissance note dans liste notes admises
+    # restucture liste et formatage lien et reconnaissance note dans liste
+    # notes admises
 
     for i, j in enumerate(y):
 
-        if j[0] == "-": # c'est une proposition relative à une question de QCM
+        if j[0] == "-":  # c'est une proposition relative à une question de QCM
 
             notes = [-0.5, -1.5, 1.5, 0.5, -1, -2, 1, 2, 0]
 
@@ -104,7 +104,7 @@ def txt2list(qcm):
 
                     break
 
-        elif j[0] == "#": # c'est une indication du nline et int point relatifs à une question ouverte
+        elif j[0] == "#":  # c'est une indication du nline et int point relatifs à une question ouverte
 
             z = y[i]
 
@@ -116,7 +116,7 @@ def txt2list(qcm):
 
             n = float(z)
 
-            y[i] =  (str(nline), n)              
+            y[i] = (str(nline), n)
 
     # formatage lien
 
@@ -176,7 +176,6 @@ def txt2list(qcm):
 
 
 def qcmChecker(k):
-
     """
     input: qcm au format liste retourné par la fonction txt2list()
 
@@ -209,7 +208,6 @@ def qcmChecker(k):
 
 
 def getInfo(qcm):
-
     """
 
     input: str ou path du qcm
@@ -263,7 +261,7 @@ def getNewId():
 
 def eleveGetResult(secret):
 
-    cur.execute("SELECT * FROM reponses WHERE secret = ?", (secret, ))
+    cur.execute("SELECT * FROM rep WHERE secret = ?", (secret, ))
 
     r = cur.fetchone()
 
@@ -272,7 +270,7 @@ def eleveGetResult(secret):
 
 def profGetResult(id):
 
-    cur.execute("SELECT * FROM reponses WHERE id = ?", (id, ))
+    cur.execute("SELECT * FROM rep WHERE id = ?", (id, ))
 
     r = cur.fetchall()
 
@@ -295,12 +293,11 @@ def profIsOwner(id, secret):
 
 
 def getTotal(k):
-
     """
     input: qcm au format liste retourné par la fonction txt2list()
 
     output: total des points du qcm et ou des questions ouvertes
-    
+
     """
 
     if isTrueQCM(k):
@@ -345,7 +342,6 @@ def getTotal(k):
 
 
 def qcm2sqlGetHTML(path):
-
     """
     input: str ou path du qcm
 
@@ -410,7 +406,6 @@ href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm
 
 
 def qcm2sql(qcmPath):
-
     """
     input: str ou path du qcm
 
@@ -449,31 +444,113 @@ def qcm2sql(qcmPath):
     return id, info, password
 
 
-def response2sql(id, html, count, name, timestamp):
+def dspasdejafait(id, name):
 
+    cur.execute("SELECT * FROM rep WHERE id = ? and name = ?", (id, name))
+
+    r = cur.fetchall()
+
+    if len(r) == 0:
+
+        return True
+
+    else:
+
+        return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def response2sql(id, replist, name, timestamp):
     """
     input:
 
         id du qcm
-        html de la réponse élève
-        count du total de point de l'élève
+        replist des réponses élève
         name (pseudo) de l'élève
         timestamp de l'envoi des réponses par l'élève
 
     output: memes info + password eleve
     """
 
-    password = secrets.token_urlsafe(8) # creation du password eleve
+    password = secrets.token_urlsafe(8)  # creation du password eleve
 
-    d = (id, html, count, name, password, timestamp)
+    d = (id, replist, name, password, timestamp)
 
     cur.execute(
-        "INSERT INTO reponses (id, html, count, name, secret, timestamp) VALUES(?,?,?,?,?,?)",
+        "INSERT INTO rep (id, reponses, name, secret, timestamp) VALUES(?,?,?,?,?,?)",
         d)
 
     conn.commit()
 
     return d
+
+
+def correction2sql(id, corlist, name):
+    """
+    input:
+
+        id du qcm
+        corlist de la correction en json [[qo, [coment, note]],[],[]]
+        name de l’eleve
+
+    ajoute les commentaires et note
+    """
+    cur.execute("SELECT * FROM corrections WHERE id = ? and name = ?", (id, name))
+
+    r = cur.fetchone()
+
+    if len(r) == 0:
+
+        d = [id, corlist, name]
+
+        cur.execute(
+        "INSERT INTO corrections (id, corlist, name) VALUES(?,?,?)",
+        d)
+    
+    else:
+
+        cur.execute(
+        "UPDATE corrections SET corlist = ? WHERE name = ? and id = ?",
+        (corlist,
+         name,
+         id))
+    
+    conn.commit()
+
+
+
+def getCorFromSQL(id, name):
+
+    cur.execute("SELECT * FROM cor WHERE id = ? and name = ?", (id, name))
+
+    r = cur.fetchone()
+
+    return r
+
+
+
+def getRepFromSQL(id, name):
+
+    cur.execute("SELECT * FROM rep WHERE id = ? and name = ?", (id, name))
+
+    r = cur.fetchone()
+
+    return r
 
 
 def getQcmFromSQL(id):
@@ -509,12 +586,12 @@ def creatForm(id):
 
         d += "<p width=100%><strong>{0}</strong></p></br>".format(label)
 
-        if len(i) == 2: # c’est alors une question ouverte
+        if len(i) == 2:  # c’est alors une question ouverte
 
-                d += """<textarea name="{0}" id="{0}" rows="{1}" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>""".format(label, int(i[1][0])) 
+            d += """<textarea name="{0}" id="{0}" rows="{1}" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>""".format(
+                label, int(i[1][0]))
 
-
-        elif len(i) > 2: # c'est alors un qcm ou vf
+        elif len(i) > 2:  # c'est alors un qcm ou vf
 
             for j in i[1:]:
 
@@ -528,7 +605,8 @@ def creatForm(id):
                     d += """<input type="checkbox" name="{0}" value="{1}"/>{1}</br>""".format(
                         label, j[0][1:])
 
-                # attention tu as retiré le "-" il faudra y penser lors des compara
+                # attention tu as retiré le "-" il faudra y penser lors des
+                # compara
 
         d += "</br>"
 

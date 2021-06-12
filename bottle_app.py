@@ -129,7 +129,6 @@ def getqcm(id, secretprof=None):
 
 @route('/postqcm')
 def postqcm():
-
     """Chargement qcm par upload"""
 
     x = """<h1 align=center>OpenQCM</h1></br><form action="/upload" method="post" enctype="multipart/form-data"><p align=center>Select a file</p><p align=center><input type="file" name="upload" /></p><p align=center><input type="submit" value="Start upload" /></p></form>"""
@@ -205,6 +204,124 @@ def do_upload():
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': html})
 
 
+
+
+
+
+
+
+
+
+
+@route("/send2", method='POST')
+def sendresponse2():
+
+    id = request.forms.get("id")
+
+    name = request.forms.get("name")
+
+    qcmlist = getQcmFromSQL(int(id))
+
+    qcm = json.loads(qcmlist[1])
+
+    start = qcmlist[3]
+
+    end = qcmlist[4]
+
+    t = time.time()
+
+    if t > end:
+
+        return template('./view/page.html', {
+            'titre':
+                'OpenQCM',
+                'body':
+                "<h1 align=center>OpenQCM</h1></br><h3 align=center>Vos réponses ne peuvent pas être accéptées. Le delais est dépassé !</h3>"
+        })
+
+
+    rep = []
+
+
+
+    for i in qcm:
+
+        if len(i) == 2:
+
+            repouverte = request.forms.get(i[0])
+
+            # on corrige les apostrophes envoyees par eleves
+            repouverte = repouverte.replace("\x92", "'")
+
+            rep.append([i[0], repouverte]]
+
+        elif len(i) > 2:
+
+            if isTrueQCM(qcm):
+
+                r = request.forms.get(i[0])
+
+                rep.append([i[0], "-" + r])
+
+            else:
+                
+                x = [i[0]]
+
+                w = request.forms.getall(i[0])
+
+                for r in w:
+
+                    x.append("-" + r)
+
+                rep.append(x)
+
+
+    # on transmet les donnees a la table reponses et on recup le password eleve
+
+    rep = response2sql(id, json.dumps(rep), name, t)
+
+    password = rep[4]
+
+    # creat qrcode eleve
+
+    linkeleve = "http://192.168.43.206:27200/eleve/{0}".format(password)
+
+    streameleve = BytesIO()
+    imgeleve = qrcode.make(linkeleve, image_factory=SvgImage)
+    imgeleve.save(streameleve)
+
+    linkeleve = streameleve.getvalue().decode()
+
+    return template('./view/page.html', {
+        'titre':
+            'OpenQCM',
+            'body':
+            """<h1 align=center>OpenQCM</h1>
+            </br>{2}</br>
+            <h3 align=center>Vos réponses ont bien été enregistrées.</br></br>Vos résultats seront disponibles à partir du {1} à l'adresse suivante:</h3>
+            <h3 align=center>
+            <a href='http://192.168.43.206:27200/eleve/{0}'>
+            http://192.168.43.206:27200/eleve/{0}</a></h3>
+            <div align=center>{3}</div>
+            """.format(password, formaTime(end), realTime, linkeleve)
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @route("/send", method='POST')
 def sendresponse():
 
@@ -241,22 +358,24 @@ def sendresponse():
 
             repouverte = request.forms.get(i[0])
 
-            repouverte = repouverte.replace("\x92", "'") # on corrige les apostrophes envoyees par eleves
+            # on corrige les apostrophes envoyees par eleves
+            repouverte = repouverte.replace("\x92", "'")
 
             # si on a pas encore initié de form correction on le fait
 
-            if  "<form action=" not in html:
+            if "<form action=" not in html:
 
                 html = """<form action="/traitementCorProf" accept-charset="ISO-8859-1" method="post">""" + html
 
-
             # formulaire note
 
-            fnote = """<label for=note>note:</label><input name = "note" id = "note" type = "number" step="0,25" value="0" max={0}/>""".format(i[1][1])
-                 
+            fnote = """<label for=note>note:</label><input name = "note{0}" id = "note{0}" type = "number" step="0,25" value="0" max="{1}"/>""".format(
+                i[0], i[1][1])
+
             # formulaire correction prof
 
-            fcp = """<textarea name="" id="txt" rows="3" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>"""
+            fcp = """<textarea name="coment{0}" id="coment{0}" rows="3" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>""".format(
+                i[0])
 
             # recup barem question
 
@@ -266,7 +385,6 @@ def sendresponse():
 
             html += "<p><strong>{0}</strong></p></br><p>{1}</p></br><p>{2}</p><p>{3}</p>".format(
                 i[0] + barem, repouverte, fcp, fnote)
-
 
     # si QCM ou alors VF
 
@@ -322,14 +440,15 @@ def sendresponse():
 
             count = 0
 
+    # si on a initié un form pour corriger les questions ouvertes, on ferme le
+    # form et on transmet le nom eleve en input hidden
 
-    # si on a initié un form pour corriger les questions ouvertes, on le ferme
+    if "<form action=" in html:
 
-    if  "<form action=" in html:
+        html += """<input type="hidden", name="pseudoeleve", value="{0}"> <input type="hidden", name="id", value="{1}"> <input value = "Enregistrer" type="submit" /></form>""".format(
+            name, id)
 
-        html += """<input value = "Enregistrer" type="submit" /></form>"""
-
-    
+    # on transmet les donnees a la table reponses et on recup le password eleve
 
     rep = response2sql(id, html, count, name, t)
 
@@ -360,36 +479,147 @@ def sendresponse():
     })
 
 
-@route("/eleve/<secret>")
-@route("/eleve/<secret>/<secretprof>")
+@route("/traitementCorProf", method="POST")
+def traitcorrprof():
+
+    id = request.forms.get("id")
+
+    qcmlist = getQcmFromSQL(int(id))
+
+    secretprof = qcmlist[2]
+
+    qcm = json.loads(qcmlist[1])
+
+    name = request.forms.get("pseudoeleve")
+
+    corlist = [] # [[qo, [coment, note]],[],[]]
+
+    for i in qcm:
+
+        if len(i) == 2:
+
+            # on recupere la note et le coment
+
+            note = request.forms.get("note{0}".format(i[0]))
+
+            coment = request.forms.get("coment{0}".format(i[0]))
+
+            coment = coment.replace("\x92", "'")
+
+            corlist.append([i[0], [coment, note]])
+
+
+
+    # on insere ou modifie la table corrections
+
+    correction2sql(id, json.dumps(corlist), name)
+
+    # redirection vers /prof/id/secret
+
+    url = "http://192.168.43.206:27200/prof/{0}/{1}".format(id, secretprof)
+
+    response.status = 303
+    response.set_header('Location', url)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@ route("/copie/<secreteleve>")
+def copie(secreteleve):
+
+    rep=eleveGetResult(secreteleve)
+
+    id = rep[0]
+
+    replist = json.loads(replist[1])
+
+    name=rep[3]
+
+    tstamp=rep[5]
+
+    qcm=getQcmFromSQL(id)
+
+    qcmlist = json.loads(qcm[1])
+
+    total=qcm[5]
+
+    end=qcm[4]
+
+    cor = getCorFromSQL(id, name)
+
+    corlist = json.loads(cor[1])
+
+
+    if end > time.time():
+
+        return template('./view/page.html', {
+                'titre':
+                'OpenQCM',
+                'body':
+                "<h1 align=center>OpenQCM</h1></br>{1}<h3 align=center>Vos résultats seront disponibles à partir du {0}</h3>".
+                format(formaTime(end), realTime)
+            })
+
+
+
+    html = ""
+
+    for q in qcmlist:}
+
+        for r in rep:
+
+            if r[0] == q[0]:
+
+                html += """<p><strong>{0}</strong></p>""".format(q[0])
+
+
+
+
+
+
+
+
+@ route("/eleve/<secret>")
+@ route("/eleve/<secret>/<secretprof>")
 def resultateleve(secret, secretprof=None):
 
-    res = eleveGetResult(secret)
+    res=eleveGetResult(secret)
 
-    id = res[0]
-    html = res[1]
-    count = res[2]
+    id=res[0]
+    html=res[1]
+    count=res[2]
 
     if count < 0:
 
-        count = 0
+        count=0
 
-    name = res[3]
-    tstamp = res[5]
+    name=res[3]
+    tstamp=res[5]
 
-    k = getQcmFromSQL(id)
+    k=getQcmFromSQL(id)
 
-    total = k[5]
+    total=k[5]
 
-    end = k[4]
+    end=k[4]
 
     if secretprof is not None:
 
-        pio = profIsOwner(id, secretprof)
+        pio=profIsOwner(id, secretprof)
 
     else:
 
-        pio = False
+        pio=False
 
     if pio == False and end > time.time():
 
@@ -401,7 +631,7 @@ def resultateleve(secret, secretprof=None):
                 format(formaTime(end), realTime)
         })
 
-    ht = """<h1 align=center>OpenQCM</h1></br>
+    ht="""<h1 align=center>OpenQCM</h1></br>
 		<h3 align=center>Résultats de {0}</h3></br>
 		<h3 align=center>QCM {1}, validé le {2}</h3></br>
 		{3}
@@ -412,67 +642,67 @@ def resultateleve(secret, secretprof=None):
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': ht})
 
 
-@route("/prof/<id>/<secret>")
+@ route("/prof/<id>/<secret>")
 def resultatprof(id, secret):
 
     if profIsOwner(id, secret):
 
-        res = profGetResult(id)
+        res=profGetResult(id)
 
-        qcm = getQcmFromSQL(id)
+        qcm=getQcmFromSQL(id)
 
-        start = qcm[3]
-        end = qcm[4]
+        start=qcm[3]
+        end=qcm[4]
 
-        total = qcm[5]
+        total=qcm[5]
 
         # creat df for excel
 
-        d = {"Nom": (), "Score /100": (), "Horodatage": (), "Lien": ()}
+        d={"Nom": (), "Score /100": (), "Horodatage": (), "Lien": ()}
 
-        df = pd.DataFrame(d)
+        df=pd.DataFrame(d)
 
         # creat table
 
-        ht = '<table style="width:100%; border:1px solid black; border-collapse:collapse;"><tr><th>Nom</th><th>Score /100</th><th>Horodatage</th><th>Lien</th></tr>'
+        ht='<table style="width:100%; border:1px solid black; border-collapse:collapse;"><tr><th>Nom</th><th>Score /100</th><th>Horodatage</th><th>Lien</th></tr>'
 
         for i in res:
 
-            score = i[2]
+            score=i[2]
 
             if score < 0:
 
-                score = 0
+                score=0
 
-            score = round((score / total) * 100, 2)
+            score=round((score / total) * 100, 2)
 
-            lien = "http://192.168.43.206:27200/eleve/{0}/{1}".format(
+            lien="http://192.168.43.206:27200/eleve/{0}/{1}".format(
                 i[4], secret)
 
-            horo = formaTime(i[5])
+            horo=formaTime(i[5])
 
-            raw = pd.DataFrame(
+            raw=pd.DataFrame(
                 [(i[3], score, horo, lien)],
                 columns=("Nom", "Score /100", "Horodatage", "Lien"))
 
-            df = df.append(raw)
+            df=df.append(raw)
 
             ht += '<tr><td>{0}</td> <td>{1}</td> <td>{2}</td> <td>{3}</td></tr>'.format(
                 i[3], score, horo, "<a href='{0}'>Voir la copie</a>".format(lien))
 
         ht += "</table>"
 
-        ht = ht.replace(
+        ht=ht.replace(
             "<th>",
             '<th style="text-align:center; border:1px solid black;">')
-        ht = ht.replace(
+        ht=ht.replace(
             "<td>",
             '<td style="text-align:center; border:1px solid black;">')
 
         # remove old xlsx and zip
 
-        xlsx2remove = glob.glob('./static/*.xlsx')
-        zip2remove = glob.glob('./static/*.zip')
+        xlsx2remove=glob.glob('./static/*.xlsx')
+        zip2remove=glob.glob('./static/*.zip')
 
         for x in xlsx2remove:
             try:
@@ -491,7 +721,7 @@ def resultatprof(id, secret):
 
         # zip xlsx
 
-        zip = zipfile.ZipFile(
+        zip=zipfile.ZipFile(
             './static/{0}.zip'.format(secret),
             mode="w",
             compression=zipfile.ZIP_DEFLATED)
@@ -499,39 +729,39 @@ def resultatprof(id, secret):
         zip.write('./static/{0}.xlsx'.format(secret))
         zip.close
 
-        xl = """<a href="/static/{0}.zip">Télécharger au format .xlsx</a>""".format(
+        xl="""<a href="/static/{0}.zip">Télécharger au format .xlsx</a>""".format(
             secret)
 
         # intro
 
-        t = time.time()
+        t=time.time()
 
         if start > t:
 
-            intro = '<h5 align=center>Ce QCM sera ouvert aux élèves du {0} au {1}</h5>'.format(
+            intro='<h5 align=center>Ce QCM sera ouvert aux élèves du {0} au {1}</h5>'.format(
                     formaTime(start), formaTime(end))
 
-            lientest = 'http://192.168.43.206:27200/getqcm/{0}/{1}'.format(
+            lientest='http://192.168.43.206:27200/getqcm/{0}/{1}'.format(
                 id, secret)
-            lientest = """<a href="{0}">{1}</a>""".format(
+            lientest="""<a href="{0}">{1}</a>""".format(
                 lientest, 'Tester le QCM')
 
         elif end > t:
 
-            intro = '<h5 align=center>Ce QCM est ouvert aux élèves jusqu’au {0}. Des résultats peuvent encore arriver !</h5>'.format(
+            intro='<h5 align=center>Ce QCM est ouvert aux élèves jusqu’au {0}. Des résultats peuvent encore arriver !</h5>'.format(
                     formaTime(end))
 
-            lientest = 'http://192.168.43.206:27200/getqcm/{0}/{1}'.format(
+            lientest='http://192.168.43.206:27200/getqcm/{0}/{1}'.format(
                 id, secret)
-            lientest = """<a href="{0}">{1}</a>""".format(
+            lientest="""<a href="{0}">{1}</a>""".format(
                 lientest, 'Tester le QCM')
 
         else:  # QCM terminé
 
-            intro = '<h5 align=center>{0} - {1}</h5>'.format(
+            intro='<h5 align=center>{0} - {1}</h5>'.format(
                     formaTime(start), formaTime(end))
 
-            lientest = 'Ce QCM n’est plus actif.'
+            lientest='Ce QCM n’est plus actif.'
 
         return template('./view/page.html', {
             'titre':
