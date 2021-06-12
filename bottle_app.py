@@ -130,6 +130,8 @@ def getqcm(id, secretprof=None):
 @route('/postqcm')
 def postqcm():
 
+    """Chargement qcm par upload"""
+
     x = """<h1 align=center>OpenQCM</h1></br><form action="/upload" method="post" enctype="multipart/form-data"><p align=center>Select a file</p><p align=center><input type="file" name="upload" /></p><p align=center><input type="submit" value="Start upload" /></p></form>"""
 
     return template('./view/page.html', {'titre': 'OpenQCM', 'body': x})
@@ -239,8 +241,32 @@ def sendresponse():
 
             repouverte = request.forms.get(i[0])
 
-            html += "<p><strong>{0}</strong></p></br><p>{1}</p></br>".format(
-                i[0], repouverte)
+            repouverte = repouverte.replace("\x92", "'") # on corrige les apostrophes envoyees par eleves
+
+            # si on a pas encore initié de form correction on le fait
+
+            if  "<form action=" not in html:
+
+                html = """<form action="/traitementCorProf" accept-charset="ISO-8859-1" method="post">""" + html
+
+
+            # formulaire note
+
+            fnote = """<label for=note>note:</label><input name = "note" id = "note" type = "number" step="0,25" value="0" max={0}/>""".format(i[1][1])
+                 
+            # formulaire correction prof
+
+            fcp = """<textarea name="" id="txt" rows="3" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>"""
+
+            # recup barem question
+
+            barem = " (/{0})".format(i[1][1])
+
+            # structuration html
+
+            html += "<p><strong>{0}</strong></p></br><p>{1}</p></br><p>{2}</p><p>{3}</p>".format(
+                i[0] + barem, repouverte, fcp, fnote)
+
 
     # si QCM ou alors VF
 
@@ -295,6 +321,15 @@ def sendresponse():
         if count < 0:  # les points négatifs ne s’accumulent pas entre les différentes questions
 
             count = 0
+
+
+    # si on a initié un form pour corriger les questions ouvertes, on le ferme
+
+    if  "<form action=" in html:
+
+        html += """<input value = "Enregistrer" type="submit" /></form>"""
+
+    
 
     rep = response2sql(id, html, count, name, t)
 
