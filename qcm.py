@@ -38,6 +38,16 @@ realTime = """<div align=center><form name="myForm" action="" method="POST"><inp
 
 def txt2list(qcm):
 
+    """
+    input: str ou paht du qcm
+
+    output: [["q", ("-p", int point), (), (), ()], [], [] ]
+
+        les questions ouvertes sont au format ["q", (str nombre ligne du form, int point]
+        les qcm sont au format ["q", ("-p", int point), (), (), ()]
+    """
+
+
     if os.path.isfile(qcm):  # si upload depuis local
 
         with open(qcm, 'r') as f:
@@ -73,11 +83,11 @@ def txt2list(qcm):
 
         y[i] = j.strip()
 
-    # restucture liste et formatage lien
+    # restucture liste et formatage lien et reconnaissance note dans liste notes admises
 
     for i, j in enumerate(y):
 
-        if j[0] == "-":
+        if j[0] == "-": # c'est une proposition relative à une question de QCM
 
             notes = [-0.5, -1.5, 1.5, 0.5, -1, -2, 1, 2, 0]
 
@@ -94,7 +104,7 @@ def txt2list(qcm):
 
                     break
 
-        elif j[0] == "#":
+        elif j[0] == "#": # c'est une indication du nline et int point relatifs à une question ouverte
 
             z = y[i]
 
@@ -140,8 +150,6 @@ def txt2list(qcm):
 
     # decoupage questions
 
-    print(y)
-
     ind = []
 
     for i, j in enumerate(y):
@@ -169,6 +177,12 @@ def txt2list(qcm):
 
 def qcmChecker(k):
 
+    """
+    input: qcm au format liste retourné par la fonction txt2list()
+
+    output: qcm au meme format avec questions mélangées.
+    """
+
     g = np.random.choice(np.arange(len(k)), len(k), replace=False)
 
     kk = []
@@ -195,6 +209,14 @@ def qcmChecker(k):
 
 
 def getInfo(qcm):
+
+    """
+
+    input: str ou path du qcm
+
+    output: strat et end du qcm au format timestamp
+
+    """
 
     if os.path.isfile(qcm):
 
@@ -273,11 +295,12 @@ def profIsOwner(id, secret):
 
 
 def getTotal(k):
+
     """
-    Calcule le total des points d'un QCM
+    input: qcm au format liste retourné par la fonction txt2list()
 
-    k: qcm au format liste . Attention, penser a faire un json.loads
-
+    output: total des points du qcm et ou des questions ouvertes
+    
     """
 
     if isTrueQCM(k):
@@ -322,6 +345,13 @@ def getTotal(k):
 
 
 def qcm2sqlGetHTML(path):
+
+    """
+    input: str ou path du qcm
+
+    output: html a afficher après creation du qcm sur le site ou upload du qcm via le site
+
+    """
 
     x = qcm2sql(path)
 
@@ -381,6 +411,15 @@ href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm
 
 def qcm2sql(qcmPath):
 
+    """
+    input: str ou path du qcm
+
+    output: id, (strat timestamp, end timestamp), password prof
+
+    ajoute les données du qcm dans la table qcm
+
+    """
+
     k = txt2list(qcmPath)
 
     total = getTotal(k)
@@ -412,7 +451,19 @@ def qcm2sql(qcmPath):
 
 def response2sql(id, html, count, name, timestamp):
 
-    password = secrets.token_urlsafe(8)
+    """
+    input:
+
+        id du qcm
+        html de la réponse élève
+        count du total de point de l'élève
+        name (pseudo) de l'élève
+        timestamp de l'envoi des réponses par l'élève
+
+    output: memes info + password eleve
+    """
+
+    password = secrets.token_urlsafe(8) # creation du password eleve
 
     d = (id, html, count, name, password, timestamp)
 
@@ -463,7 +514,7 @@ def creatForm(id):
                 d += """<textarea name="{0}" id="{0}" rows="{1}" cols="150" wrap="virtual" style="overflow:scroll;"></textarea>""".format(label, int(i[1][0])) 
 
 
-        elif len(i) > 2:
+        elif len(i) > 2: # c'est alors un qcm ou vf
 
             for j in i[1:]:
 
