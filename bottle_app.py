@@ -18,10 +18,10 @@ def index(exe=""):
     exemple = exe
 
     txt = """
-		<form method="post" action="/traitementtxt" accept-charset="ISO-8859-1">
-		<textarea name="txt" id="txt" rows="30" cols="150" wrap="virtual" style="overflow:scroll;">{0}</textarea>
-             <input type="submit" name="creat" value="Envoyer"/>
-		</form>""".format(exemple)
+        <form method="post" action="/traitementtxt" accept-charset="ISO-8859-1">
+        <textarea name="txt" id="txt" rows="30" cols="150" wrap="virtual" style="overflow:scroll;">{0}</textarea>
+        <input type="submit" name="creat" value="Envoyer"/>
+        </form>""".format(exemple)
 
     ld = """
         <form action="/traitementExemple" method="post" accept-charset="ISO-8859-1">
@@ -305,7 +305,8 @@ def resultatprof(id, secret):
         start = qcm[3]
         end = qcm[4]
 
-        alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(formaTime(end+ 864000))
+        alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(
+            formaTime(end + 864000))
 
         total = qcm[5]
 
