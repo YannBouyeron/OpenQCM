@@ -29,9 +29,6 @@ def index(exe=""):
         <select name="listderoulante" id=listderoulante class="">
         <option value="qcm">QCM (1 seule bonne réponse)</option>
         <option value="vf">VraiFaux (1 ou plusieurs bonnes réponses)</option>
-        <option value="qo">Question(s) ouverte(s)</option>
-        <option value="qoqcm">Questions ouvertes + QCM</option>
-        <option value="qovf">Questions ouvertes + Vrai / Faux</option>
         </select><input type="submit" value="Envoyer"/></form>
         """
 
@@ -40,7 +37,7 @@ def index(exe=""):
 	<p align=center><input type="file" name="upload" /></p>
 	<p align=center><input type="submit" value="Charger" /></p></form>"""
 
-    ht = """<h1 align=center>OpenQCM</h1>{0}</br><div align=center>{1}</div></br><div align=center>{2}</div></br></br><div class="uploader" align=center>{3}</div>""".format(
+    ht = """<h1 align=center>OpenQCM</h1>{0}</br><div align=center>{1}</div></br><div align=center>{2}</div></br></br><div class="uploader" align=center>{3}</div><p align=center><a href="https://github.com/YannBouyeron/OpenQCM">Github</a></p>""".format(
         realTime,
         ld,
         txt,
@@ -308,6 +305,8 @@ def resultatprof(id, secret):
         start = qcm[3]
         end = qcm[4]
 
+        alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(formaTime(end+ 864000))
+
         total = qcm[5]
 
         # creat df for excel
@@ -421,8 +420,8 @@ def resultatprof(id, secret):
             'titre':
                 'OpenQCM',
                 'body':
-                """<h1 align=center>OpenQCM</h1></br>{4}</br><h3 align=center>QCM {0}</h3>{3}<p align=center>{5}</p></br><div align=center>{1}</div></br><p align=center>{2}</p>""".
-                format(id, ht, xl, intro, realTime, lientest)
+                """<h1 align=center>OpenQCM</h1></br>{4}</br><h3 align=center>QCM {0}</h3>{3}<p align=center>{5}</p></br><div align=center>{1}</div></br><p align=center>{2}</p><p align=center>{6}</p>""".
+                format(id, ht, xl, intro, realTime, lientest, alerte)
         })
 
     else:

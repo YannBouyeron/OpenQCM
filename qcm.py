@@ -346,6 +346,9 @@ def qcm2sqlGetHTML(path):
 
     end = formaTime(x[1][1])
 
+    alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(formaTime(x[1][1]+ 864000))
+
+
     password = x[2]
 
     if os.path.isfile(path):
@@ -383,13 +386,13 @@ href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm
         <div align=center>{6}</div>
         </br></br>
         <h2 align=center>Votre code secret est: <em>{3}</em></h2>
-        <h4 align=center>Conservez ce code. Il vous sera indispensable pour obtenir les résultats de vos élèves.</h4>
+        <h4 align=center>Conservez ce code et/ou le lien ci-dessous. Ne le partagez pas ! Il vous sera indispensable pour obtenir les résultats de vos élèves.</h4>
 
         <h3 align=center>Votre interface professeur est disponible à l’adresse suivante:</h3>
 
         <p align=center><a href="http://192.168.43.206:27200/prof/{0}/{3}">http://192.168.43.206:27200/prof/{0}/{3}</a></p>
-        <div align=center>{5}</div>""".format(id, start, end, password,
-                                              realTime, linkprof, linkeleve)
+        <div align=center>{5}</div><p align=center>{7}</p>""".format(id, start, end, password,
+                                              realTime, linkprof, linkeleve, alerte)
 
     return html
 
