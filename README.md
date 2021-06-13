@@ -1,5 +1,5 @@
-# OpenEdit
+# OpenQCM
 
-Editeur md html pdf et IPFS
+Editeur de QCM en ligne.
 
 [OpenQCM](https://openqcm.pythonanywhere.com)
