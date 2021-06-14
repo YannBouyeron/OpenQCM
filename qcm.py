@@ -63,7 +63,7 @@ def txt2list(qcm):
 
         # on remplace les ‘ issues du fichier local ou les ‘ transformées en
         # \x92 issues du formulaire par des fausses appos
-        x[i] = deleteAppo(j)
+        x[i] = replacequote(j)
 
     x = " ".join(x)
 
@@ -397,7 +397,7 @@ href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm
         <div align=center>{6}</div>
         </br></br>
         <h2 align=center>Votre code secret est: <em>{3}</em></h2>
-        <h4 align=center>Conservez ce code et/ou le lien ci-dessous. Ne le partagez pas ! Il vous sera indispensable pour obtenir les résultats de vos élèves.</h4>
+        <h5 align=center>Conservez ce code confidentiel et/ou le lien confidentiel ci-dessous.</br>Ils vous seront indispensables pour obtenir les résultats de vos élèves.</h5>
 
         <h3 align=center>Votre interface professeur est disponible à l’adresse suivante:</h3>
 
@@ -506,20 +506,20 @@ def creatForm(id):
 
         label = i[0]
 
-        d += "<p width=100%><strong>{0}</strong></p></br>".format(label)
+        d += "<p width=100%><strong>{0}</strong></p></br>".format(restorequote(label))
 
        
         for j in i[1:]:
 
             if isTrueQCM(qcm):
 
-                d += """<input type="radio" name="{0}" value="{1}" required/>{1}</br>""".format(
-                    label, j[0][1:])
+                d += """<input type="radio" name="{0}" value="{1}" required/>{2}</br>""".format(
+                    label, j[0][1:], restorequote(j[0][1:])) ##########
 
             else:
 
-                d += """<input type="checkbox" name="{0}" value="{1}"/>{1}</br>""".format(
-                    label, j[0][1:])
+                d += """<input type="checkbox" name="{0}" value="{1}"/>{2}</br>""".format(
+                    label, j[0][1:], restorequote(j[0][1:]))
 
             # attention tu as retiré le "-" il faudra y penser lors des compara
 
@@ -614,18 +614,26 @@ def isTrueQCM(k):
     return True
 
 
-def deleteAppo(x):
-    """
-    Remplace les ‘ ou les ‘ transformées en \x92 par des fausses appostrophes
 
-    x : str
+def replacequote(x):
 
     """
+    remplace les guillemet, les x92 (guillement) issu des form html et les doublequoote par des caractères compatible SQL
+    """
 
-    for i in x:
+    x = x.replace("’", "´") 
+    x = x.replace("\x92", "´")
+    x = x.replace('"', "$$")
 
-        if i == "’" or i == "\x92" or i == '"':
+    return(x)
 
-            x = x.replace(i, "´")
+def restorequote(x):
 
-    return x
+    """restore les guillemet et les double quote a la sortie de sql avant affichage html"""
+
+    x = x.replace("´", "’") 
+   
+    x = x.replace("$$", '"')
+
+    return(x)
+

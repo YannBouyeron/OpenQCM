@@ -203,8 +203,7 @@ def sendresponse():
 
                 if r == j[0]:
 
-                    html += j[0] + "    <strong>" + \
-                        str(j[1]) + "</strong></br></br>"
+                    html += j[0] + "    <strong>Points: " + str(j[1]) + "</strong></br></br>"
 
                     count += float(j[1])
 
@@ -233,8 +232,7 @@ def sendresponse():
 
                     if r == j[0]:
 
-                        html += j[0] + "    <strong>" + \
-                            str(j[1]) + "</strong></br></br>"
+                        html += j[0] + "    <strong>Point(s): " + str(j[1]) + "</strong></br></br>"
 
                         count_question += float(j[1])
 
@@ -282,7 +280,11 @@ def resultateleve(secret, secretprof=None):
     res = eleveGetResult(secret)
 
     id = res[0]
+
     html = res[1]
+
+    html = restorequote(html) ####### restorequote apo et guillemet
+
     count = res[2]
 
     if count < 0:
