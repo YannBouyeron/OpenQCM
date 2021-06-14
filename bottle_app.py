@@ -12,16 +12,43 @@ def send_static(filepath):
 
 
 @route('/')
-@route('/<exe>')
-def index(exe=""):
+@route('/<exemple>')
+def index(exemple=""):
 
-    exemple = exe
+    # traitement des exemples avec période activité adaptée au timestamp actuel
+
+    x = exemple
+
+    t = time.time()
+
+    start = formaTime(t - 15*60)
+    start = start[:len(start)-4]   # on retire le GMT a la fin
+
+    end = formaTime(t + 20*60)
+    end = end[:len(end)-4]   # on retire le GMT a la fin
+
+    if x == "qcm":
+
+        with open("exempleQCM", "r") as f:
+
+            x = f.read()
+    
+    elif x == "vf":
+
+        with open("exempleVF", "r") as f:
+
+            x = f.read()
+
+    x = x.replace("08/06/2021 07h30", start)
+    x = x.replace("14/06/2021 16h00", end)
+
+    # creation des formulaires
 
     txt = """
         <form method="post" action="/traitementtxt" accept-charset="ISO-8859-1">
         <textarea name="txt" id="txt" rows="30" cols="150" wrap="virtual" style="overflow:scroll;">{0}</textarea>
         <input type="submit" name="creat" value="Envoyer"/>
-        </form>""".format(exemple)
+        </form>""".format(x)
 
     ld = """
         <form action="/traitementExemple" method="post" accept-charset="ISO-8859-1">
@@ -50,11 +77,11 @@ def index(exe=""):
 @route('/traitementExemple', method="POST")
 def tex():
 
-    x = request.forms.get("listderoulante")
+    exemple = request.forms.get("listderoulante")
 
     response.status = 303
     response.set_header('Location',
-                        'http://192.168.43.206:27200/{0}'.format(x))
+                        'http://192.168.43.206:27200/{0}'.format(exemple))
 
 
 @route('/getqcm/<id>')

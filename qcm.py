@@ -203,24 +203,35 @@ def getInfo(qcm):
 
     """
 
-    if os.path.isfile(qcm):
+    if os.path.isfile(qcm): 
 
         with open(qcm, "r") as f:
 
             lines = f.readlines()
+            
+            start = lines[0]
+           
+            start = time.strptime(start[:len(start) - 1], '%d/%m/%Y %Hh%M')
+            start = time.mktime(start)
+
+            end = lines[1]
+            end = time.strptime(end[:len(end) - 1], '%d/%m/%Y %Hh%M')
+            end = time.mktime(end)
+
 
     else:
 
         qcm = qcm.replace('\n', "")
         lines = qcm.split('\r')
 
-    start = lines[0]
-    start = time.strptime(start[:len(start) - 1], '%d/%m/%Y %Hh%M')
-    start = time.mktime(start)
+        
+        start = lines[0]
+        start = time.strptime(start, '%d/%m/%Y %Hh%M')
+        start = time.mktime(start)
 
-    end = lines[1]
-    end = time.strptime(end[:len(end) - 1], '%d/%m/%Y %Hh%M')
-    end = time.mktime(end)
+        end = lines[1]
+        end = time.strptime(end, '%d/%m/%Y %Hh%M')
+        end = time.mktime(end)
 
     return start, end
 
@@ -489,7 +500,7 @@ def creatForm(id):
             s, e)
 
     d = delta + realTime + \
-        """<form method="post" action="/send" accept-charset="iso-8859-1"><p align=center>Nom: <input type="text" size="10" maxlength="40" name="name" required/></p><input type="hidden" name="id" value="{0}"/><br/><br/><br/>""".format(id)
+        """<form method="post" action="/send" accept-charset="iso-8859-1"><p align=center>Pseudo: <input type="text" size="21" maxlength="8" placeholder="8 caractères maximum" name="name" required/></p><input type="hidden" name="id" value="{0}"/><br/><br/><br/>""".format(id)
 
     for i in qcm:
 
