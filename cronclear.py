@@ -11,7 +11,7 @@ conn = connect("data.txt")
 
 cur = conn.cursor()
 
-cur.execute("SELECT id from qcm WHERE end > ?", (t - 86400,))
+cur.execute("SELECT id from qcm WHERE end < ?", (t - 86400,))
 
 id2del = cur.fetchall()
 
