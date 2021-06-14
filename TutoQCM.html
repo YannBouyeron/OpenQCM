@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body>
+<h1>Comment créer un QCM.</h1>
+
+<p>Un QCM contient une seule bonne réponse par question. </p>
+
+<h3>Configurer la période de validité du QCM.</h3>
+
+<p>Ajoutez la date et l’heure de la mise en activité du QCM en utilisant le format ci dessous, sur la première ligne du QCM:</p>
+
+<pre><code>23/02/2021 14h05
+</code></pre>
+
+<p>Ajoutez la date et l’heure de la fin du QCM en utilisant le même format sur la seconde ligne du QCM:</p>
+
+<pre><code>23/02/2021 14h05
+24/02/2021 09h30
+</code></pre>
+
+<h3>Ajouter une question sans malus.</h3>
+
+<pre><code>23/02/2021 14h05
+24/02/2021 09h30
+
+Le granite:
+
+- Est une roche sédimentaire 0
+- Est une roche magamtique 1
+- Est une roche métamorphique 0
+- Est une roche de structure microlithique 0
+</code></pre>
+
+<h3>Ajouter une question avec malus.</h3>
+
+<pre><code>23/02/2021 14h05
+24/02/2021 09h30
+
+Le granite:
+
+- Est une roche sédimentaire 0
+- Est une roche magamtique 1
+- Est une roche métamorphique 0
+- Est une roche de structure microlithique 0
+
+Le gneiss:
+
+- Est une roche sédimentaire -1
+- Est une roche magamtique -1
+- Est une roche métamorphique 1
+- Est une roche de structure microlithique -1
+</code></pre>
+
+<p>L’échelle de notes admise est de -2 à 2 avec un pas de 0,5 soit: </p>
+
+<p align=center>-2   ;   -1,5   ;   -1   ;   -0,5   ;   0   ;   0,5   ;   1   ;   1,5   ;   2</p>
+
+<h3>Ajouter des questions avec des photos.</h3>
+
+<pre><code>23/02/2021 14h05
+24/02/2021 09h30
+
+
+Le granite:
+
+- Est une roche sédimentaire 0
+- Est une roche magamtique 1
+- Est une roche métamorphique 0
+- Est une roche de structure microlithique 0
+
+
+Le gneiss:
+
+- Est une roche sédimentaire -1
+- Est une roche magamtique -1
+- Est une roche métamorphique 1
+- Est une roche de structure microlithique -1
+
+
+Le roche représentée sur la photo ci-dessous:
+
+https://ipfs.io/ipfs/QmQ1XZJTUEa3rErpakoNVe8myBPxfZMipKdizNbf3b155N
+
+- Est une roche volcanique -1
+- Est une roche plutonique 1
+- Est une roche métamorphique -1
+- Est une roche de structure microlithique -1
+
+
+Observez la photo ci-dessous:
+
+https://ipfs.io/ipfs/QmcU1sc1UYsPpGCB6pcLTYrVxSMt1SYE8SBhpaQZkiZ2mV
+
+Le caryotype représenté:
+
+- Est le caryotype d’une cellule diploïde (non reproductrice) 0
+- Est forçement le caryotype d’un gamète femelle 0
+- Peut être le caryotype d’un gamète male 1
+- N’est pas un caryotype humain 0
+</code></pre>
+
+</body>
+</html>

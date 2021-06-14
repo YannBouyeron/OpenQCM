@@ -1,65 +1,54 @@
 08/06/2021 07h30
 14/06/2021 16h00
 
+Le Sénégal:
 
-Pour configurer la période de validité d’un Vrai Faux , je peux:
-
-- Indiquer la date de fin de validité sur le 2° ligne 1
-- Indiquer la date de début de validité sur la 1ère ligne 1
-- Indiquer la date de début de validité sur la 3° ligne -1
-- Indiquer la date de fin de validité sur la dernière ligne -1
-
+- Est un pays du Moyen Orient -0,5
+- Est un pays d’Afrique 0,5
+- A une superficie plus grande que celle du Luxembourg 0,5
+- A une superficie plus grande que celle de l’Australie -0,5
 
 
-Pour ajouter des propositions relatives à une question, je saute une ligne après la question, et:
+Observez la photo ci-dessous:
 
-- J’ajoute un - avant la proposition 1
-- J’ajoute un # avant la proposition -1
-- J’ajoute un _ avant la proposition -1
-- J’ajoute un + avant la proposition -1
+http://www.animalfactguide.com/wp-content/uploads/2013/01/koala2.jpg
 
+Cette photo représente:
 
-Les valeurs admises pour le barème de chaque proposition sont comprises dans l’ensemble (-2, -1,5, -1, -0,5, 0, 0,5, 1, 1,5, 2). 
-
-Attention, les points négatifs ne s’accumulent pas entre les questions. La note minimale pour une question donnée est 0.
-
-
-Pour configurer le barème de chaque proposition, je peux:
-
-- Indiquer le barème au début de la proposition -1
-- Indiquer le barème au milieu de la proposition -0,5
-- Indiquer le barème à la fin de la proposition 2
-- Indiquer le barème sur la première ligne du Vrai Faux -1
-
-Pour ajouter une image dans une question:
-
-https://ipfs.io/ipfs/QmcU1sc1UYsPpGCB6pcLTYrVxSMt1SYE8SBhpaQZkiZ2mV
-
-Je peux:
-
-- Indiquer le lien ou je veux -1
-- Indiquer le lien après un retour à la ligne au milieu de la question 1
-- Indiquer le lien après un retour à la ligne à la fin de la question 1
-- Indiquer le lien de l’image dans une des propositions -1
+- Un mammifère 1,5
+- Un ours -2
+- Un koala 1,5
+- Un poisson -1
 
 
-Contrairement à un "QCM", un Vrai Faux peut contenir une plusieurs bonnes réponses par question. Il faut donc:
+L’avocat est le fruit:
 
-- Attribuer un barème > 0 pour une ou plusieurs propositions 1
-- Faire en sorte que au moins une question du Vrai Faux possède au moins deux valeurs positives 1
-- Attribuer un barème < 0 pour les réponses fausses 1
-- Attribuer un barème < 0 pour toutes les propositions -2
+- Du bananier -2
+- Du cerisier -2
+- Du cocotier -2
+- De l’avocatier 2
 
-Pour tester ce Vrai Faux après avoir bien observé sa structure, je peux:
 
-- Aller sur quiziniere -2
-- Me déconnecter -1
-- Aller sur Facebook -2
-- Cliquer sur Envoyer 2
+La photo ci-dessous représente:
 
-Le champ de formulaire permettant à l’élève de saisir son Pseudo est limité à 8 caractères:
+http://i0.kym-cdn.com/entries/icons/facebook/000/000/593/pancakebunny.jpg
 
-- Aller sur quiziniere -1
-- Parceque je n’avais pas assez de place -1
-- A cause ou grâce au RGPD 1
-- Pour préserver ses données personnelles en l’empêchant de saisir des données personnelles telles que son nom 2
+- Une gaufre sur la tête d’un lapin 1
+- Une autruche avec un bonnet -0,5
+- Un pigeon avec une écharpe -0,5
+- Un lapin avec une gaufre sur la tête 1
+
+Si au moins l’une des questions de mon devoir contient plus de 1 bonne réponse (valeur > 0) alors mon devoir sera considéré dans son ensemble comme:
+
+- Un QCM -1
+- Un Vrai Faux 1,5
+- Je n’ai pas tout compris -1
+- Je n’ai rien compris -2
+
+
+Dans un Vrai Faux, les points attribués à chaque proposition doivent être compris dans l’ensemble (-2 ; -1,5 ; -1 ; -0,5 ; 0 ; 0,5 ; 1 ; 1,5 ; 2). Les points négatifs évantuellement obtenus dans une question affectent seulement la note globale de la question qui ne peut cependant pas être inféreiure à 0.
+
+- J’ai tout compris 2
+- J’ai un peu compris 0
+- Je n’ai pas tout compris -1
+- Je n’ai strictement rien compris -2
