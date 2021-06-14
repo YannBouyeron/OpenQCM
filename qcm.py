@@ -624,7 +624,7 @@ def deleteAppo(x):
 
     for i in x:
 
-        if i == "’" or i == "\x92":
+        if i == "’" or i == "\x92" or i == '"':
 
             x = x.replace(i, "´")
 

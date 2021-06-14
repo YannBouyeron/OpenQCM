@@ -193,11 +193,39 @@ def sendresponse():
 
         for i in qcm:
 
-            if len(i) > 2:  # inutile mais pas envie de tabuler
+            r = request.forms.get(i[0])
 
-                r = request.forms.get(i[0])
+            html += "<p><strong>{0}</strong></p></br>".format(i[0])
 
-                html += "<p><strong>{0}</strong></p></br>".format(i[0])
+            r = "-" + r
+
+            for j in i[1:]:
+
+                if r == j[0]:
+
+                    html += j[0] + "    <strong>" + \
+                        str(j[1]) + "</strong></br></br>"
+
+                    count += float(j[1])
+
+        if count < 0:  # le total des points de l’ensemble du QCM ne peut pas être < 0
+
+            count = 0
+
+
+    else:
+
+        count = 0
+
+        for i in qcm:
+
+            count_question = 0
+
+            w = request.forms.getall(i[0])
+
+            html += "<p><strong>{0}</strong></p></br>".format(i[0])
+
+            for r in w:
 
                 r = "-" + r
 
@@ -208,37 +236,16 @@ def sendresponse():
                         html += j[0] + "    <strong>" + \
                             str(j[1]) + "</strong></br></br>"
 
-                        count += float(j[1])
+                        count_question += float(j[1])
 
-    else:
+            if count_question < 0:
 
-        count = 0
+                count_question = 0 # dans un VF si pour une question le total est < 0, alors la question rappporte 0 (pas d’accu des points <0 entre les différentes questions
 
-        for i in qcm:
+            count += count_question
+            
 
-            if len(i) > 2:  # inutile mais pas envie de tabuler
-
-                w = request.forms.getall(i[0])
-
-                html += "<p><strong>{0}</strong></p></br>".format(i[0])
-
-                for r in w:
-
-                    r = "-" + r
-
-                    for j in i[1:]:
-
-                        if r == j[0]:
-
-                            html += j[0] + "    <strong>" + \
-                                str(j[1]) + "</strong></br></br>"
-
-                            count += float(j[1])
-
-        if count < 0:  # les points négatifs ne s’accumulent pas entre les différentes questions
-
-            count = 0
-
+   
     rep = response2sql(id, html, count, name, t)
 
     password = rep[4]
