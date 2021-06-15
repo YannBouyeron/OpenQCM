@@ -21,18 +21,18 @@ def index(exemple=""):
 
     t = time.time()
 
-    start = formaTime(t - 15*60)
-    start = start[:len(start)-4]   # on retire le GMT a la fin
+    start = formaTime(t - 15 * 60)
+    start = start[:len(start) - 4]   # on retire le GMT a la fin
 
-    end = formaTime(t + 20*60)
-    end = end[:len(end)-4]   # on retire le GMT a la fin
+    end = formaTime(t + 20 * 60)
+    end = end[:len(end) - 4]   # on retire le GMT a la fin
 
     if x == "qcm":
 
         with open("exempleQCM", "r") as f:
 
             x = f.read()
-    
+
     elif x == "vf":
 
         with open("exempleVF", "r") as f:
@@ -56,7 +56,7 @@ def index(exemple=""):
         <select name="listderoulante" id=listderoulante class="">
         <option value="qcm">QCM (1 seule bonne réponse)</option>
         <option value="vf">VraiFaux (1 ou plusieurs bonnes réponses)</option>
-        </select><input type="submit" value="Envoyer"/></form>
+        </select><input type="submit" value="Choisir"/></form>
         """
 
     uploader = """<form action="/upload" method="post" enctype="multipart/form-data">
@@ -195,22 +195,38 @@ def sendresponse():
 
             r = request.forms.get(i[0])
 
-            html += "<p><strong>{0}</strong></p></br>".format(i[0])
+            html += "<p></p><hr><hr><strong>{0}</strong></p>".format(
+                i[0])
 
             r = "-" + r
+
+            html += "<table><caption style='caption-side: top; align: center;'>Votre réponse:</caption></br>"
 
             for j in i[1:]:
 
                 if r == j[0]:
 
-                    html += j[0] + "    <strong>Points: " + str(j[1]) + "</strong></br></br>"
+                    html += "<tr><td><strong>{0}<strong></td><td align=right width=70px><strong>{1}</strong></td></tr>".format(j[0], j[1])
 
                     count += float(j[1])
+
+            html += "</table></br>"
+
+           
+
+            html += "</br></br><div align=right><table><caption style='caption-side: top; align: center;'> Barème des autres propositions:</caption></br>"
+
+            for j in i[1:]:
+
+                if r != j[0]:
+
+                    html += "<tr><td>{0}</td><td align=right width=80px>{1}</td></tr>".format(j[0], j[1])
+
+            html += "</table></div>"
 
         if count < 0:  # le total des points de l’ensemble du QCM ne peut pas être < 0
 
             count = 0
-
 
     else:
 
@@ -222,7 +238,8 @@ def sendresponse():
 
             w = request.forms.getall(i[0])
 
-            html += "<p><strong>{0}</strong></p></br>".format(i[0])
+            html += "<p></p><hr><strong>{0}</strong></p>".format(
+                i[0])
 
             for r in w:
 
@@ -230,20 +247,39 @@ def sendresponse():
 
                 for j in i[1:]:
 
+                    html += "<table><caption style='caption-side: top; align: center;'>Vos réponses:</caption></br>"
+
                     if r == j[0]:
 
-                        html += j[0] + "    <strong>Point(s): " + str(j[1]) + "</strong></br></br>"
+                        html += "<tr><td><strong>{0}</strong></td><td align=right width=70px><strong>{1}</strong></td></tr>".format(j[0], j[1])
 
                         count_question += float(j[1])
 
+                    html += "</table></br>"
+
+
+            html += "</br></br><div align=right><table><caption style='caption-side: top; align: center;'> Barème des autres propositions:</caption></br>"
+
+            for j in i[1:]:
+
+                if j[0][1:] not in w:
+
+                    html += "<tr><td>{0}</td><td align=right width=80px>{1}</td></tr>".format(j[0], j[1])
+            
+            html += "</table></div>"
+
             if count_question < 0:
 
-                count_question = 0 # dans un VF si pour une question le total est < 0, alors la question rappporte 0 (pas d’accu des points <0 entre les différentes questions
+                # dans un VF si pour une question le total est < 0, alors la
+                # question rappporte 0 (pas d’accu des points <0 entre les
+                # différentes questions
+                count_question = 0
+
+            html += "</br></br></br><div><strong>Note retenue pour cette question: {0}</strong></div></br>".format(
+                count_question)
 
             count += count_question
-            
 
-   
     rep = response2sql(id, html, count, name, t)
 
     password = rep[4]
@@ -283,7 +319,7 @@ def resultateleve(secret, secretprof=None):
 
     html = res[1]
 
-    html = restorequote(html) ####### restorequote apo et guillemet
+    html = restorequote(html)  # restorequote apo et guillemet
 
     count = res[2]
 
@@ -320,7 +356,7 @@ def resultateleve(secret, secretprof=None):
 
     ht = """<h1 align=center>OpenQCM</h1></br>
 		<h3 align=center>Résultats de {0}</h3></br>
-		<h3 align=center>QCM {1}, validé le {2}</h3></br>
+		<h3 align=center>QCM {1}, validé le {2}</h3>
 		{3}
 		<h3 align=center>Score: {4} / {5}</h3>""".format(name, id,
                                                    formaTime(tstamp), html,
@@ -471,4 +507,5 @@ def resultatprof(id, secret):
 
 
 run(host='0.0.0.0', port=27200, reload=True, debug=True)
+
 # application = default_app()

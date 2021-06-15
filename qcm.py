@@ -30,12 +30,7 @@ cur.execute(
 realTime = """<div align=center><form name="myForm" action="" method="POST"><input name="myClock" type="Text" style="text-align:center; width:200px;"></form></div><script language=javascript>self.setInterval(function () {time=new Date().toGMTString(); document.myForm.myClock.value=time},50)</script>"""
 
 
-
-
-
-
 def txt2list(qcm):
-
     """
     input: str ou paht du qcm
 
@@ -44,7 +39,6 @@ def txt2list(qcm):
         les questions ouvertes sont au format ["q", (str nombre ligne du form, int point]
         les qcm sont au format ["q", ("-p", int point), (), (), ()]
     """
-
 
     if os.path.isfile(qcm):  # si upload depuis local
 
@@ -81,11 +75,12 @@ def txt2list(qcm):
 
         y[i] = j.strip()
 
-    # restucture liste et formatage lien et reconnaissance note dans liste notes admises
+    # restucture liste et formatage lien et reconnaissance note dans liste
+    # notes admises
 
     for i, j in enumerate(y):
 
-        if j[0] == "-": # c'est une proposition relative à une question de QCM
+        if j[0] == "-":  # c'est une proposition relative à une question de QCM
 
             notes = [-0.5, -1.5, 1.5, 0.5, -1, -2, 1, 2, 0]
 
@@ -102,13 +97,12 @@ def txt2list(qcm):
 
                     break
 
-
     # formatage lien
 
     for i, j in enumerate(y):
 
         if isinstance(j, type("")) and (
-                j[:8] == "https://" or j[:7] == "http://"):
+                j[:8] == "http://" or j[:7] == "http://"):
 
             j = j.strip()
 
@@ -161,7 +155,6 @@ def txt2list(qcm):
 
 
 def qcmChecker(k):
-
     """
     input: qcm au format liste retourné par la fonction txt2list()
 
@@ -194,7 +187,6 @@ def qcmChecker(k):
 
 
 def getInfo(qcm):
-
     """
 
     input: str ou path du qcm
@@ -203,14 +195,14 @@ def getInfo(qcm):
 
     """
 
-    if os.path.isfile(qcm): 
+    if os.path.isfile(qcm):
 
         with open(qcm, "r") as f:
 
             lines = f.readlines()
-            
+
             start = lines[0]
-           
+
             start = time.strptime(start[:len(start) - 1], '%d/%m/%Y %Hh%M')
             start = time.mktime(start)
 
@@ -218,13 +210,11 @@ def getInfo(qcm):
             end = time.strptime(end[:len(end) - 1], '%d/%m/%Y %Hh%M')
             end = time.mktime(end)
 
-
     else:
 
         qcm = qcm.replace('\n', "")
         lines = qcm.split('\r')
 
-        
         start = lines[0]
         start = time.strptime(start, '%d/%m/%Y %Hh%M')
         start = time.mktime(start)
@@ -291,12 +281,11 @@ def profIsOwner(id, secret):
 
 
 def getTotal(k):
-
     """
     input: qcm au format liste retourné par la fonction txt2list()
 
     output: total des points du qcm et ou des questions ouvertes
-    
+
     """
 
     if isTrueQCM(k):
@@ -341,7 +330,6 @@ def getTotal(k):
 
 
 def qcm2sqlGetHTML(path):
-
     """
     input: str ou path du qcm
 
@@ -357,8 +345,10 @@ def qcm2sqlGetHTML(path):
 
     end = formaTime(x[1][1])
 
-    alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(formaTime(x[1][1]+ 864000))
-
+    alerte = "Toutes les données relatives à ce QCM seront détruites 10 jours après la fin de validité du QCM.</br>Pensez à télécharger les résultats de vos élèves avant le {0}".format(
+        formaTime(
+            x[1][1] +
+            864000))
 
     password = x[2]
 
@@ -402,14 +392,12 @@ href="http://192.168.43.206:27200/getqcm/{0}">http://192.168.43.206:27200/getqcm
         <h3 align=center>Votre interface professeur est disponible à l’adresse suivante:</h3>
 
         <p align=center><a href="http://192.168.43.206:27200/prof/{0}/{3}">http://192.168.43.206:27200/prof/{0}/{3}</a></p>
-        <div align=center>{5}</div><p align=center>{7}</p>""".format(id, start, end, password,
-                                              realTime, linkprof, linkeleve, alerte)
+        <div align=center>{5}</div><p align=center>{7}</p>""".format(id, start, end, password, realTime, linkprof, linkeleve, alerte)
 
     return html
 
 
 def qcm2sql(qcmPath):
-
     """
     input: str ou path du qcm
 
@@ -449,7 +437,6 @@ def qcm2sql(qcmPath):
 
 
 def response2sql(id, html, count, name, timestamp):
-
     """
     input:
 
@@ -462,7 +449,7 @@ def response2sql(id, html, count, name, timestamp):
     output: memes info + password eleve
     """
 
-    password = secrets.token_urlsafe(8) # creation du password eleve
+    password = secrets.token_urlsafe(8)  # creation du password eleve
 
     d = (id, html, count, name, password, timestamp)
 
@@ -506,15 +493,15 @@ def creatForm(id):
 
         label = i[0]
 
-        d += "<p width=100%><strong>{0}</strong></p></br>".format(restorequote(label))
+        d += "<hr><p width=100%><strong>{0}</strong></p></br>".format(
+            restorequote(label))
 
-       
         for j in i[1:]:
 
             if isTrueQCM(qcm):
 
                 d += """<input type="radio" name="{0}" value="{1}" required/>{2}</br>""".format(
-                    label, j[0][1:], restorequote(j[0][1:])) ##########
+                    label, j[0][1:], restorequote(j[0][1:]))
 
             else:
 
@@ -523,9 +510,9 @@ def creatForm(id):
 
             # attention tu as retiré le "-" il faudra y penser lors des compara
 
-        d += "</br>"
+        d += "</br><hr>"
 
-    d += """<p align=center><input type="submit" value="Enregistrer" required /></p></form>"""
+    d += """<hr><p align=center><input type="submit" value="Enregistrer" required /></p></form>"""
 
     return d, x[3], x[4]
 
@@ -614,26 +601,23 @@ def isTrueQCM(k):
     return True
 
 
-
 def replacequote(x):
-
     """
     remplace les guillemet, les x92 (guillement) issu des form html et les doublequoote par des caractères compatible SQL
     """
 
-    x = x.replace("’", "´") 
+    x = x.replace("’", "´")
     x = x.replace("\x92", "´")
     x = x.replace('"', "$$")
 
     return(x)
 
-def restorequote(x):
 
+def restorequote(x):
     """restore les guillemet et les double quote a la sortie de sql avant affichage html"""
 
-    x = x.replace("´", "’") 
-   
+    x = x.replace("´", "’")
+
     x = x.replace("$$", '"')
 
     return(x)
-
