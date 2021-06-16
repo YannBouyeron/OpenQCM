@@ -200,29 +200,29 @@ def sendresponse():
 
             r = "-" + r
 
-            html += "<table><caption style='caption-side: top; align: center;'>Votre réponse:</caption></br>"
+            html += "<table align=center><caption style='caption-side: top; align: center;'><strong>Votre réponse:</strong></caption></br>"
 
             for j in i[1:]:
 
                 if r == j[0]:
 
-                    html += "<tr><td><strong>{0}<strong></td><td align=right width=70px><strong>{1}</strong></td></tr>".format(j[0], j[1])
+                    html += "<tr><td><strong>{0}</strong></td><td align=right width=100px><strong>{1}</strong></td></tr>".format(
+                        j[0][1:], j[1])
 
                     count += float(j[1])
 
             html += "</table></br>"
 
-           
-
-            html += "</br></br><div align=right><table><caption style='caption-side: top; align: center;'> Barème des autres propositions:</caption></br>"
+            html += "</br></br><table align=center><caption style='caption-side: top; align: center;'><i>Barème des autres propositions:</i></caption></br>"
 
             for j in i[1:]:
 
                 if r != j[0]:
 
-                    html += "<tr><td>{0}</td><td align=right width=80px>{1}</td></tr>".format(j[0], j[1])
+                    html += "<tr><td><i>{0}</i></td><td align=right width=100px><i>{1}</i></td></tr>".format(
+                        j[0][1:], j[1])
 
-            html += "</table></div>"
+            html += "</table>"
 
         if count < 0:  # le total des points de l’ensemble du QCM ne peut pas être < 0
 
@@ -238,8 +238,10 @@ def sendresponse():
 
             w = request.forms.getall(i[0])
 
-            html += "<p></p><hr><strong>{0}</strong></p>".format(
+            html += "<p></p><hr><hr><strong>{0}</strong></p>".format(
                 i[0])
+
+            html += "<table align=center><caption style='caption-side: top; align: center;'><strong>Vos réponses:</strong></caption></br>"
 
             for r in w:
 
@@ -247,25 +249,24 @@ def sendresponse():
 
                 for j in i[1:]:
 
-                    html += "<table><caption style='caption-side: top; align: center;'>Vos réponses:</caption></br>"
-
                     if r == j[0]:
 
-                        html += "<tr><td><strong>{0}</strong></td><td align=right width=70px><strong>{1}</strong></td></tr>".format(j[0], j[1])
+                        html += "<tr><td><strong>{0}</strong></td><td align=right width=100px><strong>{1}</strong></td></tr>".format(
+                            j[0], j[1])
 
                         count_question += float(j[1])
 
-                    html += "</table></br>"
+            html += "</table></br>"
 
-
-            html += "</br></br><div align=right><table><caption style='caption-side: top; align: center;'> Barème des autres propositions:</caption></br>"
+            html += "</br></br><table align=center><caption style='caption-side: top; align: center;'><i>Barème des autres propositions:</i></caption></br>"
 
             for j in i[1:]:
 
                 if j[0][1:] not in w:
 
-                    html += "<tr><td>{0}</td><td align=right width=80px>{1}</td></tr>".format(j[0], j[1])
-            
+                    html += "<tr><td><i>{0}</i></td><td align=right width=100px><i>{1}</i></td></tr>".format(
+                        j[0], j[1])
+
             html += "</table></div>"
 
             if count_question < 0:
@@ -508,4 +509,4 @@ def resultatprof(id, secret):
 
 run(host='0.0.0.0', port=27200, reload=True, debug=True)
 
-# application = default_app()
+#application = default_app()
